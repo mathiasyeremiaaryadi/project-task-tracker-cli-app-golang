@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type Task struct {
-	Id          string `json:"id"`
+	Id          int    `json:"id"`
 	Description string `json:"description"`
 	Status      string `json:"status"`
 	CreatedAt   string `json:"created_at"`
@@ -32,16 +33,15 @@ func main() {
 			return
 		}
 
-		id := os.Args[2]
-		description := strings.Join(os.Args[3:], " ")
-		AddTask(tasks, id, description)
+		description := strings.Join(os.Args[2:], " ")
+		AddTask(tasks, description)
 	case "update":
 		if len(os.Args) < 3 {
 			fmt.Println("Please provide a task description.")
 			return
 		}
 
-		id := os.Args[2]
+		id, _ := strconv.Atoi(os.Args[2])
 		description := strings.Join(os.Args[3:], " ")
 		UpdateTask(tasks, id, description)
 	case "delete":
@@ -50,7 +50,7 @@ func main() {
 			return
 		}
 
-		id := os.Args[2]
+		id, _ := strconv.Atoi(os.Args[2])
 		DeleteTask(tasks, id)
 	case "list":
 		var filter string
@@ -69,7 +69,7 @@ func main() {
 
 		status := strings.Split(os.Args[1], "-")
 		joinedStatus := strings.Join(status[1:], "-")
-		id := os.Args[2]
+		id, _ := strconv.Atoi(os.Args[2])
 		MarkTaskStatus(tasks, id, joinedStatus)
 	default:
 		println("Invalid operation. Use add, update, delete, or list.")
@@ -102,13 +102,18 @@ func InitialReadTask() []Task {
 	return tasks
 }
 
-func AddTask(tasks []Task, id string, description string) {
+func AddTask(tasks []Task, description string) {
 	newTask := Task{
-		Id:          id,
 		Description: description,
 		Status:      "todo",
 		CreatedAt:   time.Now().Format("2006-01-02 15:04:05"),
 		UpdatedAt:   time.Now().Format("2006-01-02 15:04:05"),
+	}
+
+	if tasks != nil || len(tasks) > 0 {
+		newTask.Id = tasks[len(tasks)-1].Id + 1
+	} else {
+		newTask.Id = 1
 	}
 
 	tasks = append(tasks, newTask)
@@ -124,10 +129,10 @@ func AddTask(tasks []Task, id string, description string) {
 		return
 	}
 
-	fmt.Println("Task added successfully!")
+	fmt.Printf("Task added successfully! (ID:%d)", newTask.Id)
 }
 
-func UpdateTask(tasks []Task, id string, description string) {
+func UpdateTask(tasks []Task, id int, description string) {
 	isFound := false
 	for i, task := range tasks {
 		if task.Id == id {
@@ -158,7 +163,7 @@ func UpdateTask(tasks []Task, id string, description string) {
 	fmt.Println("Task updated successfully!")
 }
 
-func DeleteTask(tasks []Task, id string) {
+func DeleteTask(tasks []Task, id int) {
 	isFound := false
 	for i, task := range tasks {
 		if task.Id == id {
@@ -201,7 +206,7 @@ func ListTasks(tasks []Task, filter string) {
 	}
 }
 
-func MarkTaskStatus(tasks []Task, id string, status string) {
+func MarkTaskStatus(tasks []Task, id int, status string) {
 	isFound := false
 	for i, task := range tasks {
 		if task.Id == id {
