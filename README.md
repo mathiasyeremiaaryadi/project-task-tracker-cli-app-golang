@@ -1,5 +1,5 @@
 
-# Project Title
+# Golang Task Tracker CLI APP
 
 This is a CLI application for task tracker to manage your todo task. 
 
